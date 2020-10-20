@@ -1,0 +1,417 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Stochastics Project 4 - Omar Thenmalai</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2020-04-19"><meta name="DC.source" content="StochasticsProject4.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Stochastics Project 4 - Omar Thenmalai</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Part 1</a></li><li><a href="#2">Part 2: ML and MAP Classifier</a></li></ul></div><h2 id="1">Part 1</h2><pre class="codeinput">num_iterations = 1000;
+A = 1; <span class="comment">% Choose A=1</span>
+p0 = 0.8;
+p1 = 0.2;
+target = randi(5,1,num_iterations); <span class="comment">% Generate 1000 integer values between 1 and 5</span>
+target(find(target == 1)) = A;
+target(find(target  &gt; 1)) = 0; <span class="comment">% Set all values !=1 to 0 --&gt; Only 1/5 of the values should be equal to A</span>
+SNR = [1 2 5 10] <span class="comment">% Vector of SNR values</span>
+std_dev_Z = [30,40,50,10];
+eta = 0.01:0.01:10;
+etas = (p0/p1) * eta;
+Y_Z = zeros(1,num_iterations);
+
+prob_error = zeros(1, length(SNR));
+prob_error_Z = zeros(1, length(SNR));
+figure;
+<span class="keyword">for</span> i = 1:1:length(SNR) <span class="comment">% Loop through the SNR values</span>
+    <span class="comment">% 1A) Derive and implement in MATLAB the MAP rule for detecting the target. Run 1000 iterations</span>
+    <span class="comment">% of your detector; compare the probability of error with the theoretical probability of error.</span>
+    std_dev = sqrt(A/SNR(i)); <span class="comment">% Get the standard deviation based on the value of A and the given SNR value</span>
+    X = normrnd(0, std_dev, 1,num_iterations);
+    Z = normrnd(0,std_dev_Z(i),1,num_iterations);
+    Y = X + target;
+    index1 = find(target == A);
+    index2 = find(target == 0);
+    Y_Z(index1) = target(index1) + X(index1);
+    Y_Z(index2) = target(index2) + Z(index2);
+
+    prob_ygivenH0 = normpdf(Y,0,std_dev);
+    prob_ygivenH1 = normpdf(Y,A,std_dev);
+
+    prob_Z_ygivenH0 = normpdf(Y,A,std_dev_Z(i)); <span class="comment">% When Y = A + Z</span>
+    prob_Z_ygivenH1 = normpdf(Y,A,std_dev);
+
+    result = zeros(1,num_iterations);
+    result(find((prob_ygivenH1./prob_ygivenH0) &gt; (p0/p1))) = 1;<span class="comment">% Result is 1 if prob(ygivenH1)/prob(y_givenH0) is greater than p0/p1</span>
+    result(find((prob_ygivenH1./prob_ygivenH0) &lt; (p0/p1))) = 0; <span class="comment">% Vice versa</span>
+
+    result_Z = zeros(1,num_iterations);
+    result_Z(find((prob_Z_ygivenH1./prob_Z_ygivenH0) &gt; (p0/p1))) = 1; <span class="comment">% Same holds true</span>
+    result_Z(find((prob_Z_ygivenH1./prob_Z_ygivenH0) &lt; (p0/p1))) = 0;
+
+    correct_detect = abs(result - target); <span class="comment">% If guess - target is 0, detection was correct, 1 if incorrect</span>
+    correct_detect_Z = abs(result_Z - target);
+    count = length(result(find(correct_detect == 1))); <span class="comment">% Count number of misses</span>
+    count_Z = length(result_Z(find(correct_detect_Z==1)));
+    cost0 = length(target(find(target==0))); <span class="comment">% Calculate cost0 for later step</span>
+    cost1 = length(target(find(target==1))); <span class="comment">% Calculate cost1 for later step</span>
+    prob_error(i) = count/num_iterations; <span class="comment">% prob of error for various SNRs</span>
+    prob_error_Z(i) = count_Z/num_iterations; <span class="comment">% prob of error for range of SNRs</span>
+
+
+
+    <span class="comment">% 1B) Implement a simulation that plots the receiver operating curve for this detector. Plot the</span>
+    <span class="comment">% receiver operating curve for several signal to noise ratios.</span>
+    cD = zeros(1,length(eta));
+    cF = zeros(1,length(eta));
+    cD_Z = zeros(1,length(eta));
+    cF_Z = zeros(1,length(eta));
+    result_eta = zeros(1,num_iterations);
+    result_eta_Z = zeros(1,num_iterations);
+    <span class="keyword">for</span> j = 1:1:length(eta)
+        result_eta(find(prob_ygivenH1./prob_ygivenH0 &gt; etas(j))) = 1;
+        result_eta(find(prob_ygivenH1./prob_ygivenH0 &lt; etas(j))) = 0;
+        result_eta_Z(find(prob_Z_ygivenH1./prob_Z_ygivenH0 &gt; etas(j))) = 1;
+        result_eta_Z(find(prob_Z_ygivenH1./prob_Z_ygivenH0 &lt; etas(j))) = 0;
+
+        incorrect_detect_eta_theoretical = result_eta - target;
+        incorrect_detect_eta_simulated = result_eta_Z - target;
+        cF(j) = length(result_eta(find(incorrect_detect_eta_theoretical == 1))); <span class="comment">% cost of false alarm</span>
+        cF_Z(j) = length(result_eta_Z(find(incorrect_detect_eta_simulated == 1)));
+
+        correct_detect_eta_theoretical = result_eta + target;
+        correct_detect_eta_simulated = result_eta_Z + target;
+        cD(j) = length(result_eta(find(correct_detect_eta_theoretical == 2))); <span class="comment">% cost of correct detection</span>
+        cD_Z(j) = length(result_eta_Z(find(correct_detect_eta_simulated == 2)));
+    <span class="keyword">end</span>
+
+    F = cF/cost0;
+    D = cD/cost1;
+    F_Z = cF_Z/cost0;
+    D_Z = cD_Z/cost1;
+    plot(F, D);
+    hold <span class="string">on</span>;
+    plot(F_Z,D_Z);
+<span class="keyword">end</span>
+
+<span class="comment">% 1C) Assume that missing the target is 10 times worse than falsely detecting the target. What is</span>
+<span class="comment">% the decision rule that minimizes the conditional risk? Mark this point on your receiver</span>
+<span class="comment">% operating curve for at least one SNR value.</span>
+plot(F(10),D(10), <span class="string">'*'</span>);
+title(<span class="string">"ROC at Various SNR Values"</span>);
+xlabel(<span class="string">"Probability of False Alarm"</span>);
+ylabel(<span class="string">"Probability of Detection"</span>);
+legend(<span class="string">"SNR=1"</span>, <span class="string">"30:1 ratio"</span>, <span class="string">"SNR=3"</span>, <span class="string">"40:1/2 ratio"</span>, <span class="string">"SNR=5"</span>,  <span class="string">"50:1/5 ratio"</span>, <span class="string">"SNR=10"</span>, <span class="string">"10:1/10 ratio"</span>,<span class="string">"Point where missing the target is 10 times worse than false alarm"</span>, <span class="string">'Location'</span>, <span class="string">'southeast'</span>);
+hold <span class="string">off</span>
+
+<span class="comment">% 1D) Using the cost structure in part c), Select one SNR value and plot the value of the expected</span>
+<span class="comment">% cost for a range of a priori target present probabilities from 0 to 1.</span>
+p = linspace(0,1,100); <span class="comment">% 100 a priori probabilities from 0 to 1</span>
+result = zeros(1,num_iterations);
+cM = zeros(1,num_iterations);
+cFf = zeros(1,num_iterations);
+expected_cost = zeros(1,length(p));
+std_dev = sqrt(A/10);
+
+<span class="keyword">for</span> i = 1:1:length(p)
+    target = randi(100,1,num_iterations);
+    target(find(target &lt;= p(i)*100)) = A;
+    target(find(target &gt; p(i)*100)) = 0;
+    X = normrnd(0, std_dev, 1, num_iterations);
+    Y = target + X;
+    prob_ygivenH1 = normpdf(Y,A,std_dev);
+    prob_ygivenH0 = normpdf(Y,0,std_dev);
+    result(find((prob_ygivenH1./prob_ygivenH0) &gt; 0.1*(1-p(i))/p(i))) = 1;
+    result(find((prob_ygivenH1./prob_ygivenH0) &lt; 0.1*(1-p(i))/p(i))) = 0;
+
+    temp = result - target;
+    cM(i) = length(result(find(temp==-1)));
+    cFf(i) = length(result(find(temp==1)));
+     expected_cost(i) = 10*cM(i)/num_iterations + 1*cFf(i)/num_iterations;
+<span class="keyword">end</span>
+
+figure;
+plot(p,expected_cost);
+xlabel(<span class="string">'A Priori Probability of Target Being Present'</span>);
+ylabel(<span class="string">'Expected Cost'</span>);
+title(<span class="string">'Expected Cost vs A Priori Probabilities of Target Present (SNR=10)'</span>);
+prob_error
+prob_error_Z
+</pre><pre class="codeoutput">
+SNR =
+
+     1     2     5    10
+
+
+prob_error =
+
+    0.1990    0.1680    0.1030    0.0500
+
+
+prob_error_Z =
+
+    0.6740    0.6440    0.4800    0.1100
+
+</pre><img vspace="5" hspace="5" src="StochasticsProject4_01.png" alt=""> <img vspace="5" hspace="5" src="StochasticsProject4_02.png" alt=""> <h2 id="2">Part 2: ML and MAP Classifier</h2><pre class="codeinput">data = load(<span class="string">'Iris.mat'</span>);
+shuffled_data = randperm(size(data.features,1)); <span class="comment">% Shuffle data so that train and test sets are chosen randomly</span>
+shuffled_features = data.features(shuffled_data,:); <span class="comment">% Extract the features</span>
+shuffled_labels = data.labels(shuffled_data,:); <span class="comment">% Extract the labels</span>
+
+training_features = shuffled_features(1:(size(shuffled_features, 1)/2), :); <span class="comment">% Take the first half of the data as the training set</span>
+training_labels = shuffled_labels(1:size(shuffled_labels, 1)/2);
+test_features = shuffled_features(size(shuffled_features, 1)/2+1:end,:); <span class="comment">% Take the second half of the data as the test set</span>
+test_labels = shuffled_labels(size(shuffled_labels, 1)/2+1:end);
+
+p1 = training_features(training_labels == 1,:);
+p2 = training_features(training_labels == 2,:);
+p3 = training_features(training_labels == 3,:);
+
+cov1 = cov(p1);
+cov2 = cov(p2);
+cov3 = cov(p3);
+
+mu1 = [mean(p1(:,1)),mean(p1(:,2)),mean(p1(:,3)),mean(p1(:,4))];
+mu2 = [mean(p2(:,1)),mean(p2(:,2)),mean(p2(:,3)),mean(p2(:,4))];
+mu3 = [mean(p3(:,1)),mean(p3(:,2)),mean(p3(:,3)),mean(p3(:,4))];
+
+label_probs = [mvnpdf(test_features,mu1,cov1),mvnpdf(test_features,mu2,cov2),mvnpdf(test_features,mu3,cov3)];
+[~,result] = max(label_probs, [], 2); <span class="comment">% The max likelihood of the various labels is the result</span>
+num_errors = sum(test_labels~=result);
+prob_error = num_errors/size(test_labels,1)
+confusion_matrix = confusionmat(test_labels,result) <span class="comment">% plotconfusion isn't working for some reason</span>
+</pre><pre class="codeoutput">
+prob_error =
+
+    0.0400
+
+
+confusion_matrix =
+
+    26     0     0
+     0    24     2
+     0     1    22
+
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Stochastics Project 4 - Omar Thenmalai
+%% Part 1
+num_iterations = 1000;
+A = 1; % Choose A=1
+p0 = 0.8;
+p1 = 0.2;
+target = randi(5,1,num_iterations); % Generate 1000 integer values between 1 and 5
+target(find(target == 1)) = A;
+target(find(target  > 1)) = 0; % Set all values !=1 to 0 REPLACE_WITH_DASH_DASH> Only 1/5 of the values should be equal to A 
+SNR = [1 2 5 10] % Vector of SNR values
+std_dev_Z = [30,40,50,10];
+eta = 0.01:0.01:10;
+etas = (p0/p1) * eta;
+Y_Z = zeros(1,num_iterations);
+
+prob_error = zeros(1, length(SNR));
+prob_error_Z = zeros(1, length(SNR));
+figure;
+for i = 1:1:length(SNR) % Loop through the SNR values
+    % 1A) Derive and implement in MATLAB the MAP rule for detecting the target. Run 1000 iterations
+    % of your detector; compare the probability of error with the theoretical probability of error.
+    std_dev = sqrt(A/SNR(i)); % Get the standard deviation based on the value of A and the given SNR value
+    X = normrnd(0, std_dev, 1,num_iterations);
+    Z = normrnd(0,std_dev_Z(i),1,num_iterations);
+    Y = X + target;
+    index1 = find(target == A);
+    index2 = find(target == 0);
+    Y_Z(index1) = target(index1) + X(index1);
+    Y_Z(index2) = target(index2) + Z(index2);
+    
+    prob_ygivenH0 = normpdf(Y,0,std_dev);
+    prob_ygivenH1 = normpdf(Y,A,std_dev);
+  
+    prob_Z_ygivenH0 = normpdf(Y,A,std_dev_Z(i)); % When Y = A + Z
+    prob_Z_ygivenH1 = normpdf(Y,A,std_dev); 
+    
+    result = zeros(1,num_iterations);
+    result(find((prob_ygivenH1./prob_ygivenH0) > (p0/p1))) = 1;% Result is 1 if prob(ygivenH1)/prob(y_givenH0) is greater than p0/p1
+    result(find((prob_ygivenH1./prob_ygivenH0) < (p0/p1))) = 0; % Vice versa
+
+    result_Z = zeros(1,num_iterations);
+    result_Z(find((prob_Z_ygivenH1./prob_Z_ygivenH0) > (p0/p1))) = 1; % Same holds true
+    result_Z(find((prob_Z_ygivenH1./prob_Z_ygivenH0) < (p0/p1))) = 0;
+    
+    correct_detect = abs(result - target); % If guess - target is 0, detection was correct, 1 if incorrect
+    correct_detect_Z = abs(result_Z - target);
+    count = length(result(find(correct_detect == 1))); % Count number of misses
+    count_Z = length(result_Z(find(correct_detect_Z==1)));
+    cost0 = length(target(find(target==0))); % Calculate cost0 for later step
+    cost1 = length(target(find(target==1))); % Calculate cost1 for later step
+    prob_error(i) = count/num_iterations; % prob of error for various SNRs
+    prob_error_Z(i) = count_Z/num_iterations; % prob of error for range of SNRs
+
+
+
+    % 1B) Implement a simulation that plots the receiver operating curve for this detector. Plot the
+    % receiver operating curve for several signal to noise ratios.
+    cD = zeros(1,length(eta));
+    cF = zeros(1,length(eta));
+    cD_Z = zeros(1,length(eta));
+    cF_Z = zeros(1,length(eta));
+    result_eta = zeros(1,num_iterations);
+    result_eta_Z = zeros(1,num_iterations);
+    for j = 1:1:length(eta)
+        result_eta(find(prob_ygivenH1./prob_ygivenH0 > etas(j))) = 1;
+        result_eta(find(prob_ygivenH1./prob_ygivenH0 < etas(j))) = 0;
+        result_eta_Z(find(prob_Z_ygivenH1./prob_Z_ygivenH0 > etas(j))) = 1;
+        result_eta_Z(find(prob_Z_ygivenH1./prob_Z_ygivenH0 < etas(j))) = 0;
+        
+        incorrect_detect_eta_theoretical = result_eta - target;
+        incorrect_detect_eta_simulated = result_eta_Z - target;
+        cF(j) = length(result_eta(find(incorrect_detect_eta_theoretical == 1))); % cost of false alarm
+        cF_Z(j) = length(result_eta_Z(find(incorrect_detect_eta_simulated == 1)));
+        
+        correct_detect_eta_theoretical = result_eta + target;
+        correct_detect_eta_simulated = result_eta_Z + target;
+        cD(j) = length(result_eta(find(correct_detect_eta_theoretical == 2))); % cost of correct detection
+        cD_Z(j) = length(result_eta_Z(find(correct_detect_eta_simulated == 2)));
+    end
+    
+    F = cF/cost0;
+    D = cD/cost1;
+    F_Z = cF_Z/cost0;
+    D_Z = cD_Z/cost1;
+    plot(F, D);
+    hold on;
+    plot(F_Z,D_Z);
+end
+
+% 1C) Assume that missing the target is 10 times worse than falsely detecting the target. What is
+% the decision rule that minimizes the conditional risk? Mark this point on your receiver
+% operating curve for at least one SNR value.
+plot(F(10),D(10), '*');
+title("ROC at Various SNR Values");
+xlabel("Probability of False Alarm");
+ylabel("Probability of Detection");
+legend("SNR=1", "30:1 ratio", "SNR=3", "40:1/2 ratio", "SNR=5",  "50:1/5 ratio", "SNR=10", "10:1/10 ratio","Point where missing the target is 10 times worse than false alarm", 'Location', 'southeast');
+hold off
+
+% 1D) Using the cost structure in part c), Select one SNR value and plot the value of the expected
+% cost for a range of a priori target present probabilities from 0 to 1.
+p = linspace(0,1,100); % 100 a priori probabilities from 0 to 1
+result = zeros(1,num_iterations);
+cM = zeros(1,num_iterations);
+cFf = zeros(1,num_iterations);
+expected_cost = zeros(1,length(p));
+std_dev = sqrt(A/10);
+
+for i = 1:1:length(p)
+    target = randi(100,1,num_iterations);
+    target(find(target <= p(i)*100)) = A;
+    target(find(target > p(i)*100)) = 0;
+    X = normrnd(0, std_dev, 1, num_iterations);
+    Y = target + X;
+    prob_ygivenH1 = normpdf(Y,A,std_dev);
+    prob_ygivenH0 = normpdf(Y,0,std_dev);
+    result(find((prob_ygivenH1./prob_ygivenH0) > 0.1*(1-p(i))/p(i))) = 1; 
+    result(find((prob_ygivenH1./prob_ygivenH0) < 0.1*(1-p(i))/p(i))) = 0;
+    
+    temp = result - target;
+    cM(i) = length(result(find(temp==-1)));
+    cFf(i) = length(result(find(temp==1)));
+     expected_cost(i) = 10*cM(i)/num_iterations + 1*cFf(i)/num_iterations;
+end
+
+figure;
+plot(p,expected_cost);
+xlabel('A Priori Probability of Target Being Present');
+ylabel('Expected Cost');
+title('Expected Cost vs A Priori Probabilities of Target Present (SNR=10)');
+prob_error
+prob_error_Z
+
+%% Part 2: ML and MAP Classifier
+data = load('Iris.mat');
+shuffled_data = randperm(size(data.features,1)); % Shuffle data so that train and test sets are chosen randomly
+shuffled_features = data.features(shuffled_data,:); % Extract the features
+shuffled_labels = data.labels(shuffled_data,:); % Extract the labels
+
+training_features = shuffled_features(1:(size(shuffled_features, 1)/2), :); % Take the first half of the data as the training set
+training_labels = shuffled_labels(1:size(shuffled_labels, 1)/2);
+test_features = shuffled_features(size(shuffled_features, 1)/2+1:end,:); % Take the second half of the data as the test set
+test_labels = shuffled_labels(size(shuffled_labels, 1)/2+1:end);
+
+p1 = training_features(training_labels == 1,:); 
+p2 = training_features(training_labels == 2,:);
+p3 = training_features(training_labels == 3,:);
+
+cov1 = cov(p1);
+cov2 = cov(p2);
+cov3 = cov(p3);
+
+mu1 = [mean(p1(:,1)),mean(p1(:,2)),mean(p1(:,3)),mean(p1(:,4))];
+mu2 = [mean(p2(:,1)),mean(p2(:,2)),mean(p2(:,3)),mean(p2(:,4))];
+mu3 = [mean(p3(:,1)),mean(p3(:,2)),mean(p3(:,3)),mean(p3(:,4))];
+
+label_probs = [mvnpdf(test_features,mu1,cov1),mvnpdf(test_features,mu2,cov2),mvnpdf(test_features,mu3,cov3)];
+[~,result] = max(label_probs, [], 2); % The max likelihood of the various labels is the result
+num_errors = sum(test_labels~=result);
+prob_error = num_errors/size(test_labels,1)
+confusion_matrix = confusionmat(test_labels,result) % plotconfusion isn't working for some reason
+##### SOURCE END #####
+--></body></html>
